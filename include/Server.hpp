@@ -16,16 +16,19 @@ class Server{
   explicit Server(Properties properties);
 
  private:
-  const Properties properties;
-  asio::io_service service;
+  const Properties properties_;
+  asio::io_service service_;
 
   std::atomic_bool shutdown{false};
 
-  std::vector<std::thread> threads;
+  std::thread connections_thread;
+  std::vector<std::thread> client_threads;
+
   mutable std::mutex client_mutex;
 
   void handle_connected_clients();
   void handle_incoming_clients();
+  void stop();
 };
 
 #endif // INCLUDE_SERVER_HPP_

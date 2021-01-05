@@ -27,3 +27,7 @@ void Client::disconnect(std::string const& final_message, error_code& error) {
 void Client::send(const std::string& payload, error_code& error) {
   socket_.write_some(asio::buffer(payload + ENDLINE), error);
 }
+
+void Client::ping(error_code& error) {
+  send("ping OK", error);
+}
