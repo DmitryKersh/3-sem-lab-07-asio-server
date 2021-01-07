@@ -37,13 +37,13 @@ hunter_add_package(Boost COMPONENTS log filesystem thread)
 find_package(Boost CONFIG REQUIRED log filesystem thread)
 
 file(GLOB_RECURSE SERVER_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp")
-add_library(server-lib STATIC ${SERVER_LIB_SOURCES})
+add_library(server-lib STATIC ${SERVER_LIB_SOURCES} sources/ClientList.cpp)
 
 file(GLOB_RECURSE TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
 
 add_executable(server-exec
         ${CMAKE_CURRENT_SOURCE_DIR}/server-exec/main.cpp
-        )
+        include/ClientList.hpp)
 
 target_include_directories(server-lib PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
