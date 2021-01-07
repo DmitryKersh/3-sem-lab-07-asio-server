@@ -7,9 +7,11 @@
 int main() {
   asio::io_service service;
 
-  while (getchar() != 's'){
-    getchar();
-  }
+  Server server(Properties{tcp::endpoint{tcp::v4(), 8080}, std::chrono::seconds(5), 2});
+
+  std::string input;
+  while (input != "stop") std::getline(std::cin, input);
+  server.stop();
 
   return 0;
 }

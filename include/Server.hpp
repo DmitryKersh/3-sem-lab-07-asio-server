@@ -4,16 +4,18 @@
 #define INCLUDE_SERVER_HPP_
 
 #include <Client.hpp>
+#include <queue>
+
+struct Properties{
+  tcp::endpoint endpoint;
+  std::chrono::seconds client_timeout;
+  size_t n_threads;
+};
 
 class Server{
  public:
-  struct Properties{
-    tcp::endpoint endpoint;
-    std::chrono::seconds client_timeout;
-    size_t n_threads;
-  };
-
   explicit Server(Properties properties);
+  void stop();
 
  private:
   const Properties properties_;
@@ -26,9 +28,10 @@ class Server{
 
   mutable std::mutex client_mutex;
 
+  std::queue<std::shared_ptr<Client>> clients_;
+
   void handle_connected_clients();
   void handle_incoming_clients();
-  void stop();
 };
 
 #endif // INCLUDE_SERVER_HPP_
