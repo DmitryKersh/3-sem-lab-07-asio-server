@@ -5,26 +5,25 @@
 #ifndef TEMPLATE_CLIENT_HPP
 #define TEMPLATE_CLIENT_HPP
 
-#include <asio.hpp>
-auto constexpr ENDLINE = '\n';
-
-using asio::error_code;
-using asio::ip::tcp;
+#include <ClientList.hpp>
 
 class Client {
  private:
   tcp::socket socket_;
-  std::chrono::system_clock::time_point last_time_active_;
+  timetype last_time_active_;
+  timetype last_time_update_list_;
 
  public:
-  explicit Client(asio::io_service& service);
+  explicit Client(asio::io_service& service, ClientList& list);
   ~Client();
 
-  void ping(error_code& error);
+  void ping_ok(error_code& error);
+  void list_changed(error_code& error);
+
   void close();
   void disconnect_inactive(error_code& error);
 
-  [[nodiscard]] std::chrono::system_clock::time_point last_time_active() const {
+  [[nodiscard]] timetype last_time_active() const {
     return last_time_active_;
   }
 
@@ -33,10 +32,11 @@ class Client {
 
   void send(std::string const& payload, error_code& error);
 
-  bool handle(error_code& error);
+  bool handle(timetype last_time_server_update_list, error_code& error);
 
  private:
-  bool  is_logged;
+  ClientList& list_;
+  std::optional<std::string> username;
   void disconnect(std::string const& final_message, error_code& error);
 };
 #endif  // TEMPLATE_CLIENT_HPP

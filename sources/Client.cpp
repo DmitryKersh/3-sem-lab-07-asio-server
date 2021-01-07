@@ -18,10 +18,13 @@ std::vector<std::string> split(std::string const& s, char delimiter) {
   return result;
 }
 
-Client::Client(asio::io_service& service)
+Client::Client(asio::io_service& service, ClientList& list)
     : socket_{service},
-      last_time_active_(std::chrono::system_clock::now()),
-      is_logged(false) {}
+      last_time_active_(NOW),
+      last_time_update_list_(NOW),
+      list_(list),
+      username(std::nullopt)
+{}
 
 Client::~Client() { close(); }
 
@@ -41,9 +44,10 @@ void Client::send(const std::string& payload, error_code& error) {
   socket_.write_some(asio::buffer(payload + ENDLINE), error);
 }
 
-void Client::ping(error_code& error) { send("ping OK", error); }
+void Client::ping_ok(error_code& error) { send("ping_ok", error); }
+void Client::list_changed(error_code& error) { send("client_list_changed", error); }
 
-bool Client::handle(error_code& error) {
+bool Client::handle(timetype last_time_server_update_list, error_code& error) {
   std::string query;
 
   asio::streambuf buffer;
@@ -55,7 +59,7 @@ bool Client::handle(error_code& error) {
     return false;
   }
 
-  last_time_active_ = std::chrono::system_clock::now();
+  last_time_active_ = NOW;
 
   std::istream input(&buffer);
   std::getline(input, query);
@@ -67,17 +71,22 @@ bool Client::handle(error_code& error) {
     // TODO: log (warning) Empty query
     return false;
   }
-
+/*
   for (auto const& word : words) {
     // TODO: log (trace) [word]
   }
-
-  if (is_logged){
+*/
+  if (username.has_value()){
     if (words[0] == "ping"){
-      ping(error);
-      // TODO: log (info) Client pinged
+      if (last_time_update_list_ == last_time_server_update_list){
+        ping_ok(error);
+      } else {
+        list_changed(error);
+      }
+      return true;
     } else if (words[0] == "clients"){
       // TODO: implementation here
+      return true;
     } else {
       // TODO: log (warning) Unknown command for logged user: *words[0]*
       disconnect("Unknown command for logged user: \"" + words[0] + "\"", error);
@@ -92,4 +101,5 @@ bool Client::handle(error_code& error) {
       return false;
     }
   }
+  return false;
 }

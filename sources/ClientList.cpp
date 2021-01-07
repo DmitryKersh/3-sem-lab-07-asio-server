@@ -5,11 +5,19 @@
 #include <ClientList.hpp>
 
 bool ClientList::add_client(const std::string& user) {
-  return list.insert(user).second;
+  if (list.insert(user).second){
+    last_update_time = NOW;
+    return true;
+  }
+  return false;
 }
 
 bool ClientList::remove_client(const std::string& user) {
-  return list.erase(user);
+  if (list.erase(user)){
+    last_update_time = NOW;
+    return true;
+  }
+  return false;
 }
 
 std::string ClientList::get_list() const {
@@ -21,3 +29,4 @@ std::string ClientList::get_list() const {
 
   return str + ']';
 }
+ClientList::ClientList() : last_update_time(NOW){}
