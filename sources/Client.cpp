@@ -22,8 +22,8 @@ Client::Client(asio::io_service& service, ClientList& list)
     : socket_{service},
       last_time_active_(NOW),
       last_time_update_list_(NOW),
-      list_(list),
-      username(std::nullopt)
+      username(std::nullopt),
+      list_(list)
 {}
 
 Client::~Client() { close(); }
@@ -47,7 +47,7 @@ void Client::send(const std::string& payload, error_code& error) {
 void Client::ping_ok(error_code& error) { send("ping_ok", error); }
 void Client::list_changed(error_code& error) { send("client_list_changed", error); }
 
-bool Client::handle(timetype last_time_server_update_list, error_code& error) {
+bool Client::handle(error_code& error) {
   std::string query;
 
   asio::streambuf buffer;
@@ -78,28 +78,49 @@ bool Client::handle(timetype last_time_server_update_list, error_code& error) {
 */
   if (username.has_value()){
     if (words[0] == "ping"){
-      if (last_time_update_list_ == last_time_server_update_list){
+      if (last_time_update_list_ == list_.last_update_time()){
         ping_ok(error);
       } else {
         list_changed(error);
       }
       return true;
-    } else if (words[0] == "clients"){
-      // TODO: implementation here
-      return true;
-    } else {
-      // TODO: log (warning) Unknown command for logged user: *words[0]*
-      disconnect("Unknown command for logged user: \"" + words[0] + "\"", error);
-      return false;
     }
+
+    if (words[0] == "clients"){
+      send(list_.get_list(), error);
+      return true;
+    }
+
+    // TODO: log (warning) Unknown command for logged user: *words[0]*
+    disconnect("Unknown command for logged user: \"" + words[0] + "\"", error);
+    return false;
+
   } else {
     if (words[0] == "login"){
-      // TODO: implementation here
-    } else {
-      // TODO: log (warning) Unknown command for unlogged user: *words[0]*
-      disconnect("Unknown command for unlogged user: \"" + words[0] + "\"", error);
+      if (words.size() > 1){
+        std::string name = words[1];
+
+        if (list_.add_client(name)){
+          last_time_update_list_ = list_.last_update_time();
+          username = name;
+          send("login ok. Name: " + name, error);
+          return true;
+        }
+
+        // TODO: log (warning) Username already exists: *words[1]*
+        disconnect("Username already exists\"" + words[1] + "\"", error);
+        return false;
+
+      }
+
+      // TODO: log (warning) Empty username
+      disconnect("Empty username", error);
       return false;
+
     }
+
+    // TODO: log (warning) Unknown command for unlogged user: *words[0]*
+    disconnect("Unknown command for unlogged user: \"" + words[0] + "\"", error);
+    return false;
   }
-  return false;
 }

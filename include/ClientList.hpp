@@ -21,11 +21,12 @@ using asio::ip::tcp;
 typedef std::chrono::system_clock::time_point timetype;
 
 class ClientList{
-  timetype last_update_time;
+  timetype last_update_time_;
   std::set<std::string> list;
   std::shared_mutex list_mutex;
  public:
   ClientList();
+  [[nodiscard]] inline timetype last_update_time() const { return last_update_time_; }
   bool add_client(std::string const& user);
   bool remove_client(std::string const& user);
   [[nodiscard]] std::string get_list() const;

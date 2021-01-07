@@ -30,7 +30,6 @@ class Server{
 
   std::queue<std::shared_ptr<Client>> clients_;
 
-  timetype  last_time_list_update_;
   ClientList client_list_;
 
   void handle_connected_clients();

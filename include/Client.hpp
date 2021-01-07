@@ -32,11 +32,11 @@ class Client {
 
   void send(std::string const& payload, error_code& error);
 
-  bool handle(timetype last_time_server_update_list, error_code& error);
-
+  bool handle(error_code& error);
+  std::optional<std::string> username;
  private:
   ClientList& list_;
-  std::optional<std::string> username;
+
   void disconnect(std::string const& final_message, error_code& error);
 };
 #endif  // TEMPLATE_CLIENT_HPP

@@ -6,8 +6,7 @@
 Server::Server(Properties properties)
     : properties_(properties),
       connections_thread(&Server::handle_incoming_clients, this),
-      client_threads(properties_.n_threads),
-      last_time_list_update_(NOW) {
+      client_threads(properties_.n_threads) {
   // TODO: log (info) Starting server at port <port> with <n_threads> client
   // threads
   for (auto& thread : client_threads) {
@@ -74,10 +73,13 @@ void Server::handle_connected_clients() {
 
     error_code error;
     // add the client to the queue if it behaves correctly
-    if (!error && client->handle(last_time_list_update_, error)) {
+    if (!error && client->handle(error)) {
       std::scoped_lock const lock(client_mutex);
       // std::cout << "push" << std::endl;
       clients_.push(client);
+    } else {
+      // if something went wrong user is removed from list and needs to re-login
+      client_list_.remove_client(*(client->username));
     }
   }
 }
