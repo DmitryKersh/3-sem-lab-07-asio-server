@@ -76,6 +76,7 @@ bool Client::handle(error_code& error) {
     // TODO: log (trace) [word]
   }
 */
+
   if (username.has_value()){
     if (words[0] == "ping"){
       if (last_time_update_list_ == list_.last_update_time()){
@@ -89,6 +90,11 @@ bool Client::handle(error_code& error) {
     if (words[0] == "clients"){
       send(list_.get_list(), error);
       return true;
+    }
+
+    if (words[0] == "exit"){
+      disconnect("Client " + *username + " exited", error);
+      return false;
     }
 
     // TODO: log (warning) Unknown command for logged user: *words[0]*

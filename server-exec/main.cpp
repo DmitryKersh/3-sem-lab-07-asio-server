@@ -8,7 +8,7 @@ int main() {
   asio::io_service service;
 
   // TODO: log (info) Starting server at port <port>
-  Server server(Properties{tcp::endpoint{tcp::v4(), 8080}, std::chrono::seconds(5), 2});
+  Server server(Properties{tcp::endpoint{tcp::v4(), 8080}, std::chrono::seconds(10), 2});
 
 
   std::string input;
