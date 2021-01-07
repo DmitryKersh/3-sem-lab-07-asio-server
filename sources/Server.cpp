@@ -6,19 +6,23 @@
 Server::Server(Properties properties) : properties_(properties),
                                         connections_thread(&Server::handle_incoming_clients, this),
                                         client_threads(properties_.n_threads){
+  // TODO: log (info) Starting server at port <port> with <n_threads> client threads
   for (auto& thread : client_threads){
+    // TODO: log (trace) Starting thread
     thread = std::thread(&Server::handle_connected_clients, this);
   }
 }
 
 void Server::stop() {
+  // TODO: log (info) Stopping server
   shutdown = true;
-
+  // TODO: log (info) Stopping IO service
   service_.stop();
-
+  // TODO: log (info) Stopping connection thread
   connections_thread.join();
 
   for (auto& thread : client_threads){
+    // TODO: log (trace) Stopping thread
     thread.join();
   }
 }
@@ -29,14 +33,18 @@ void Server::handle_incoming_clients() {
   while (!shutdown){
     auto client = std::make_shared<Client>(service_);
 
-    error_code e;
-    std::cout << "connection" << std::endl; //TODO: log "waiting client"
-    acceptor.accept(client->socket(), e);
+    {
+      error_code e;
+      std::cout << "connection" << std::endl;  // TODO: log (trace) "waiting client"
+      acceptor.accept(client->socket(), e);
 
-    if (e) break;
+      if (e) break;
+    }
 
-    std::scoped_lock const lock(client_mutex);
-    clients_.push(std::move(client));
+    {
+      std::scoped_lock const lock(client_mutex);
+      clients_.push(std::move(client));
+    }
   }
 }
 
@@ -47,23 +55,24 @@ void Server::handle_connected_clients() {
     {
       std::scoped_lock const lock(client_mutex);
       if (clients_.empty()) continue;
+      client = clients_.front();
+      //std::cout << "pop" << std::endl;
+      clients_.pop();
     }
-
-    client = clients_.front();
-    clients_.pop();
 
     if (std::chrono::system_clock::now() - client->last_time_active() > properties_.client_timeout){
       error_code error;
       client->disconnect_inactive(error);
       if (error){
-        //TODO: log "error while disconnecting inactive client"
+        //TODO: log (info) "error while disconnecting inactive client"
       }
     }
 
     error_code error;
-    // add the client to the queue if it still is alive
-    if (!error) {
+    // add the client to the queue if it behaves correctly
+    if (!error && client->handle(error)) {
       std::scoped_lock const lock(client_mutex);
+      //std::cout << "push" << std::endl;
       clients_.push(client);
     }
   }

@@ -31,8 +31,12 @@ class Client {
   [[nodiscard]] tcp::socket const& socket() const { return socket_; }
   [[nodiscard]] tcp::socket& socket() { return socket_; }
 
- private:
   void send(std::string const& payload, error_code& error);
+
+  bool handle(error_code& error);
+
+ private:
+  bool  is_logged;
   void disconnect(std::string const& final_message, error_code& error);
 };
 #endif  // TEMPLATE_CLIENT_HPP
