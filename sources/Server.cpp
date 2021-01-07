@@ -7,24 +7,23 @@ Server::Server(Properties properties)
     : properties_(properties),
       connections_thread(&Server::handle_incoming_clients, this),
       client_threads(properties_.n_threads) {
-  // TODO: log (info) Starting server at port <port> with <n_threads> client
-  // threads
+  BOOST_LOG_TRIVIAL(info) << "Starting server at port <port> with" << properties_.n_threads << "client threads";
   for (auto& thread : client_threads) {
-    // TODO: log (trace) Starting thread
+    BOOST_LOG_TRIVIAL(debug) << "Starting thread";
     thread = std::thread(&Server::handle_connected_clients, this);
   }
 }
 
 void Server::stop() {
-  // TODO: log (info) Stopping server
+  BOOST_LOG_TRIVIAL(info) << "Stopping server";
   shutdown = true;
-  // TODO: log (info) Stopping IO service
+  BOOST_LOG_TRIVIAL(debug) << "Stopping IO service";
   service_.stop();
-  // TODO: log (info) Stopping connection thread
+  BOOST_LOG_TRIVIAL(debug) << "Stopping connection thread";
   connections_thread.join();
 
   for (auto& thread : client_threads) {
-    // TODO: log (trace) Stopping thread
+    BOOST_LOG_TRIVIAL(debug) << "Stopping threads";
     thread.join();
   }
 }
@@ -37,8 +36,7 @@ void Server::handle_incoming_clients() {
 
     {
       error_code e;
-      std::cout << "connection"
-                << std::endl;  // TODO: log (trace) "waiting client"
+      BOOST_LOG_TRIVIAL(info) << "waiting client...";
       acceptor.accept(client->socket(), e);
 
       if (e) break;
@@ -59,15 +57,15 @@ void Server::handle_connected_clients() {
       std::scoped_lock const lock(client_mutex);
       if (clients_.empty()) continue;
       client = clients_.front();
-      // std::cout << "pop" << std::endl;
       clients_.pop();
     }
 
     if (NOW - client->last_time_active() > properties_.client_timeout) {
       error_code error;
       client->disconnect_inactive(error);
+      BOOST_LOG_TRIVIAL(info) << "Disconnecting inactive client";
       if (error) {
-        // TODO: log (info) "error while disconnecting inactive client"
+        BOOST_LOG_TRIVIAL(warning) <<  "Error while disconnecting inactive client";
       }
     }
 
@@ -75,7 +73,6 @@ void Server::handle_connected_clients() {
     // add the client to the queue if it behaves correctly
     if (!error && client->handle(error)) {
       std::scoped_lock const lock(client_mutex);
-      // std::cout << "push" << std::endl;
       clients_.push(client);
     } else {
       // if something went wrong user is removed from list and needs to re-login

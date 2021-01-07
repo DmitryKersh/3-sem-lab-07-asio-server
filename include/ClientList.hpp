@@ -7,9 +7,25 @@
 
 #include <asio.hpp>
 
+// logging stuff
+
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/keywords/file_name.hpp>
+#include <boost/log/keywords/rotation_size.hpp>
+#include <boost/log/keywords/time_based_rotation.hpp>
+#include <boost/log/sinks.hpp>
+
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/file.hpp>
+
+// other
+
 #include <set>
 #include <shared_mutex>
 #include <optional>
+
+// macro
 
 #define NOW std::chrono::system_clock::now()
 

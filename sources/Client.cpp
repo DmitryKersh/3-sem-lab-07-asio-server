@@ -31,7 +31,6 @@ Client::~Client() { close(); }
 void Client::close() { socket_.close(); }
 
 void Client::disconnect_inactive(error_code& error) {
-  // TODO: log(info) "Disconnecting client on timeout"
   disconnect("Disconnected by timeout", error);
 }
 
@@ -44,8 +43,8 @@ void Client::send(const std::string& payload, error_code& error) {
   socket_.write_some(asio::buffer(payload + ENDLINE), error);
 }
 
-void Client::ping_ok(error_code& error) { send("ping_ok", error); }
-void Client::list_changed(error_code& error) { send("client_list_changed", error); }
+inline void Client::ping_ok(error_code& error) { send("ping_ok", error); }
+inline void Client::list_changed(error_code& error) { send("client_list_changed", error); }
 
 bool Client::handle(error_code& error) {
   std::string query;
@@ -55,7 +54,7 @@ bool Client::handle(error_code& error) {
 
   if (error) {
     disconnect("Error while reading query", error);
-    // TODO: log (warning) Error while reading query
+    BOOST_LOG_TRIVIAL(warning) <<  "Error while reading query";
     return false;
   }
 
@@ -68,14 +67,15 @@ bool Client::handle(error_code& error) {
 
   if (words.empty()) {
     disconnect("Empty query", error);
-    // TODO: log (warning) Empty query
+    BOOST_LOG_TRIVIAL(warning) <<  "Empty query";
     return false;
   }
-/*
+
+  BOOST_LOG_TRIVIAL(trace) << "Query:";
   for (auto const& word : words) {
-    // TODO: log (trace) [word]
+    BOOST_LOG_TRIVIAL(trace) << word;
   }
-*/
+
 
   if (username.has_value()){
     if (words[0] == "ping"){
@@ -97,7 +97,7 @@ bool Client::handle(error_code& error) {
       return false;
     }
 
-    // TODO: log (warning) Unknown command for logged user: *words[0]*
+    BOOST_LOG_TRIVIAL(warning) << "Unknown command for logged user:" << words[0];
     disconnect("Unknown command for logged user: \"" + words[0] + "\"", error);
     return false;
 
@@ -113,19 +113,19 @@ bool Client::handle(error_code& error) {
           return true;
         }
 
-        // TODO: log (warning) Username already exists: *words[1]*
+        BOOST_LOG_TRIVIAL(warning) << "Username already exists:" << words[1];
         disconnect("Username already exists\"" + words[1] + "\"", error);
         return false;
 
       }
 
-      // TODO: log (warning) Empty username
+      BOOST_LOG_TRIVIAL(warning) << "Empty username";
       disconnect("Empty username", error);
       return false;
 
     }
 
-    // TODO: log (warning) Unknown command for unlogged user: *words[0]*
+    BOOST_LOG_TRIVIAL(warning) <<  "Unknown command for unlogged user:" << words[0];
     disconnect("Unknown command for unlogged user: \"" + words[0] + "\"", error);
     return false;
   }
