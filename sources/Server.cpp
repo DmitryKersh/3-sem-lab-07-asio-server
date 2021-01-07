@@ -21,3 +21,11 @@ void Server::stop() {
     thread.join();
   }
 }
+
+void Server::handle_incoming_clients() {
+
+}
+
+void Server::handle_connected_clients() {
+
+}

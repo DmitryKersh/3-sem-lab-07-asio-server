@@ -7,5 +7,9 @@
 int main() {
   asio::io_service service;
 
+  while (getchar() != 's'){
+    getchar();
+  }
+
   return 0;
 }
