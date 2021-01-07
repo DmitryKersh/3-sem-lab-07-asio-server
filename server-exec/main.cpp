@@ -23,13 +23,16 @@ logging::add_file_log(keywords::file_name = "logs/file_%3N.log",
 int main() {
   asio::io_service service;
   log_init();
+  const int port = 8080;
 
-  // TODO: log (info) Starting server at port <port>
-  Server server(Properties{tcp::endpoint{tcp::v4(), 8080}, std::chrono::seconds(10), 2});
+  Server server(Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(10), 2});
 
 
   std::string input;
-  while (input != "stop") std::getline(std::cin, input);
+  while (input != "stop") {
+    std::getline(std::cin, input);
+  }
+
   server.stop();
 
   return 0;
