@@ -27,16 +27,21 @@ class Client {
     return last_time_active_;
   }
 
+  void reset_last_time_active(){
+    last_time_active_ = NOW;
+  }
+
   [[nodiscard]] tcp::socket const& socket() const { return socket_; }
   [[nodiscard]] tcp::socket& socket() { return socket_; }
 
   void send(std::string const& payload, error_code& error);
 
-  bool handle(error_code& error);
+  bool handle(error_code& error/*, size_t timelimit*/);
   std::optional<std::string> username;
  private:
   ClientList& list_;
 
+  void timer();
   void disconnect(std::string const& final_message, error_code& error);
 };
 #endif  // TEMPLATE_CLIENT_HPP

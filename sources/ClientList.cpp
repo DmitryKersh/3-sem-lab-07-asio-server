@@ -29,7 +29,8 @@ std::string ClientList::get_list() const {
   for (auto const& user : list){
     str += (user + "; ");
   }
-  BOOST_LOG_TRIVIAL(debug) << "Got client list";
-  return str + ']';
+  str += ']';
+  BOOST_LOG_TRIVIAL(debug) << "Got client list: " << str;
+  return str;
 }
 ClientList::ClientList() : last_update_time_(NOW){}

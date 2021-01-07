@@ -7,7 +7,7 @@ Server::Server(Properties properties)
     : properties_(properties),
       connections_thread(&Server::handle_incoming_clients, this),
       client_threads(properties_.n_threads) {
-  BOOST_LOG_TRIVIAL(info) << "Starting server at port <port> with" << properties_.n_threads << "client threads";
+  BOOST_LOG_TRIVIAL(info) << "Starting server at port " << properties_.endpoint.port() << " with " << properties_.n_threads << " client threads";
   for (auto& thread : client_threads) {
     BOOST_LOG_TRIVIAL(debug) << "Starting thread";
     thread = std::thread(&Server::handle_connected_clients, this);
@@ -20,7 +20,7 @@ void Server::stop() {
   BOOST_LOG_TRIVIAL(debug) << "Stopping IO service";
   service_.stop();
   BOOST_LOG_TRIVIAL(debug) << "Stopping connection thread";
-  connections_thread.join();
+  connections_thread.detach();
 
   for (auto& thread : client_threads) {
     BOOST_LOG_TRIVIAL(debug) << "Stopping threads";
@@ -38,6 +38,7 @@ void Server::handle_incoming_clients() {
       error_code e;
       BOOST_LOG_TRIVIAL(info) << "waiting client...";
       acceptor.accept(client->socket(), e);
+      client->reset_last_time_active();
 
       if (e) break;
     }
@@ -71,12 +72,14 @@ void Server::handle_connected_clients() {
 
     error_code error;
     // add the client to the queue if it behaves correctly
+
     if (!error && client->handle(error)) {
       std::scoped_lock const lock(client_mutex);
       clients_.push(client);
     } else {
       // if something went wrong user is removed from list and needs to re-login
       client_list_.remove_client(*(client->username));
+      client->close();
     }
   }
 }
