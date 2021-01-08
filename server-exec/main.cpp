@@ -25,7 +25,7 @@ int main() {
   log_init();
   const int port = 8080;
 
-  Server server(Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(10), 2});
+  Server server(Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(20), 2});
 
 
   std::string input;

@@ -40,6 +40,7 @@ void Client::disconnect_inactive(error_code& error) {
 
 void Client::disconnect(std::string const& final_message, error_code& error) {
   send(final_message, error);
+  list_.remove_client(*username);
   close();
 }
 

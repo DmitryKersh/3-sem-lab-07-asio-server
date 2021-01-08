@@ -61,6 +61,8 @@ void Server::handle_connected_clients() {
       clients_.pop();
     }
 
+    Timer client_timer(client, properties_.client_timeout);
+/*
     if (NOW - client->last_time_active() > properties_.client_timeout) {
       error_code error;
       client->disconnect_inactive(error);
@@ -69,17 +71,20 @@ void Server::handle_connected_clients() {
         BOOST_LOG_TRIVIAL(warning) <<  "Error while disconnecting inactive client";
       }
     }
-
+*/
+    std::thread timer_thread(&Timer::run, std::ref(client_timer));
     error_code error;
     // add the client to the queue if it behaves correctly
 
     if (!error && client->handle(error)) {
+      client_timer.stop();
       std::scoped_lock const lock(client_mutex);
       clients_.push(client);
     } else {
       // if something went wrong user is removed from list and needs to re-login
-      client_list_.remove_client(*(client->username));
-      client->close();
+      client->disconnect_inactive(error);
     }
+    timer_thread.join();
   }
 }
+

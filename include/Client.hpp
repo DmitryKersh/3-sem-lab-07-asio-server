@@ -36,7 +36,7 @@ class Client {
 
   void send(std::string const& payload, error_code& error);
 
-  bool handle(error_code& error/*, size_t timelimit*/);
+  bool handle(error_code& error);
   std::optional<std::string> username;
  private:
   ClientList& list_;
