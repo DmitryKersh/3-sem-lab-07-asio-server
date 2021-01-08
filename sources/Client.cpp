@@ -5,9 +5,9 @@
 #include <Client.hpp>
 #include <string>
 
-void Client::timer(){
-    sleep(10);
-    socket_.close();
+void Client::timer() {
+  sleep(10);
+  socket_.close();
 }
 
 std::vector<std::string> split(std::string const& s, char delimiter) {
@@ -53,18 +53,19 @@ inline void Client::list_changed(error_code& error) {
   send("client_list_changed", error);
 }
 
-bool Client::handle(error_code& error/*, size_t timelimit*/) {
+bool Client::handle(error_code& error /*, size_t timelimit*/) {
   std::string query;
   last_time_active_ = NOW;
 
-  //std::thread time(&Client::timer, this);
+  // std::thread time(&Client::timer, this);
 
   asio::streambuf buffer;
   asio::read_until(socket_, buffer, ENDLINE, error);
 
   if (error) {
     disconnect("Error while reading query", error);
-    BOOST_LOG_TRIVIAL(warning) << "Error while reading query. 99% it was timeout";
+    BOOST_LOG_TRIVIAL(warning)
+        << "Error while reading query. 99% it was timeout";
     return false;
   }
 
@@ -85,12 +86,11 @@ bool Client::handle(error_code& error/*, size_t timelimit*/) {
     if (words[0] == "ping") {
       if (last_time_update_list_ == list_.last_update_time()) {
         ping_ok(error);
-        BOOST_LOG_TRIVIAL(info)
-          << "Client " << *username << " pinged_ok";
+        BOOST_LOG_TRIVIAL(info) << "Client " << *username << " pinged_ok";
       } else {
         list_changed(error);
         BOOST_LOG_TRIVIAL(info)
-          << "Client " << *username << " notified to update his ClientList";
+            << "Client " << *username << " notified to update his ClientList";
       }
       return true;
     }

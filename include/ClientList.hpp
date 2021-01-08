@@ -9,21 +9,20 @@
 
 // logging stuff
 
-#include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/keywords/file_name.hpp>
 #include <boost/log/keywords/rotation_size.hpp>
 #include <boost/log/keywords/time_based_rotation.hpp>
 #include <boost/log/sinks.hpp>
-
+#include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
 // other
 
+#include <optional>
 #include <set>
 #include <shared_mutex>
-#include <optional>
 
 // macro
 
@@ -36,13 +35,16 @@ using asio::ip::tcp;
 
 typedef std::chrono::system_clock::time_point timetype;
 
-class ClientList{
+class ClientList {
   timetype last_update_time_;
   std::set<std::string> list;
   mutable std::shared_mutex list_mutex;
+
  public:
   ClientList();
-  [[nodiscard]] inline timetype last_update_time() const { return last_update_time_; }
+  [[nodiscard]] inline timetype last_update_time() const {
+    return last_update_time_;
+  }
   bool add_client(std::string const& user);
   bool remove_client(std::string const& user);
   [[nodiscard]] std::string get_list() const;

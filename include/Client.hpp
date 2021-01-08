@@ -23,13 +23,9 @@ class Client {
   void close();
   void disconnect_inactive(error_code& error);
 
-  [[nodiscard]] timetype last_time_active() const {
-    return last_time_active_;
-  }
+  [[nodiscard]] timetype last_time_active() const { return last_time_active_; }
 
-  void reset_last_time_active(){
-    last_time_active_ = NOW;
-  }
+  void reset_last_time_active() { last_time_active_ = NOW; }
 
   [[nodiscard]] tcp::socket const& socket() const { return socket_; }
   [[nodiscard]] tcp::socket& socket() { return socket_; }
@@ -38,6 +34,7 @@ class Client {
 
   bool handle(error_code& error);
   std::optional<std::string> username;
+
  private:
   ClientList& list_;
 

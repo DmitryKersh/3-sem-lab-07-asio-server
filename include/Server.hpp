@@ -27,7 +27,7 @@ class Timer {
   void run() {
     start_time = NOW;
     while (NOW - start_time < duration_ && !stop_) {
-      //sleep(1);
+      // sleep(1);
     }
     if (!stop_) {
       error_code e;
@@ -61,7 +61,5 @@ class Server {
   void handle_connected_clients();
   void handle_incoming_clients();
 };
-
-
 
 #endif  // INCLUDE_SERVER_HPP_

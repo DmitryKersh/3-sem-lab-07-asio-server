@@ -7,7 +7,9 @@ Server::Server(Properties properties)
     : properties_(properties),
       connections_thread(&Server::handle_incoming_clients, this),
       client_threads(properties_.n_threads) {
-  BOOST_LOG_TRIVIAL(info) << "Starting server at port " << properties_.endpoint.port() << " with " << properties_.n_threads << " client threads";
+  BOOST_LOG_TRIVIAL(info) << "Starting server at port "
+                          << properties_.endpoint.port() << " with "
+                          << properties_.n_threads << " client threads";
   for (auto& thread : client_threads) {
     BOOST_LOG_TRIVIAL(debug) << "Starting thread";
     thread = std::thread(&Server::handle_connected_clients, this);
@@ -62,16 +64,17 @@ void Server::handle_connected_clients() {
     }
 
     Timer client_timer(client, properties_.client_timeout);
-/*
-    if (NOW - client->last_time_active() > properties_.client_timeout) {
-      error_code error;
-      client->disconnect_inactive(error);
-      BOOST_LOG_TRIVIAL(info) << "Disconnecting inactive client";
-      if (error) {
-        BOOST_LOG_TRIVIAL(warning) <<  "Error while disconnecting inactive client";
-      }
-    }
-*/
+    /*
+        if (NOW - client->last_time_active() > properties_.client_timeout) {
+          error_code error;
+          client->disconnect_inactive(error);
+          BOOST_LOG_TRIVIAL(info) << "Disconnecting inactive client";
+          if (error) {
+            BOOST_LOG_TRIVIAL(warning) <<  "Error while disconnecting inactive
+       client";
+          }
+        }
+    */
     std::thread timer_thread(&Timer::run, std::ref(client_timer));
     error_code error;
     // add the client to the queue if it behaves correctly
@@ -87,4 +90,3 @@ void Server::handle_connected_clients() {
     timer_thread.join();
   }
 }
-
