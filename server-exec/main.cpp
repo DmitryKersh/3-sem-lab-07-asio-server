@@ -14,7 +14,7 @@ static void log_init() {
                                    logging::trivial::trace);
 
   logging::add_file_log(keywords::file_name = "logs/file_%3N.log",
-                        keywords::rotation_size = 5 * 1024,
+8                        keywords::rotation_size = 5 * 128 * 1024,
                         keywords::time_based_rotation =
                             sinks::file::rotation_at_time_point(12, 0, 0));
 }
@@ -25,7 +25,7 @@ int main() {
   const int port = 8080;
 
   Server server(
-      Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(20), 2});
+      Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(8), 8});
 
   std::string input;
   while (input != "stop") {
