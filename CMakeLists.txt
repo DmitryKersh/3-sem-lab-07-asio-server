@@ -21,7 +21,8 @@ HunterGate(
 )
 
 # TODO: rename project and delete this comment
-project(template VERSION 0.1.0)
+project(asio-server VERSION 0.1.0)
+
 string(APPEND CMAKE_CXX_FLAGS " -pedantic -Werror -Wall -Wextra")
 string(APPEND CMAKE_CXX_FLAGS " -Wno-unused-command-line-argument")
 string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
@@ -29,28 +30,33 @@ string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
 
-add_library(${PROJECT_NAME} STATIC
-  # enum your files and delete this comment
-  ${CMAKE_CURRENT_SOURCE_DIR}/sources/source.cpp
+hunter_add_package(asio)
+find_package(asio CONFIG REQUIRED)
+
+hunter_add_package(Boost COMPONENTS log filesystem thread)
+find_package(Boost CONFIG REQUIRED log filesystem thread)
+
+file(GLOB_RECURSE SERVER_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp")
+add_library(server-lib STATIC ${SERVER_LIB_SOURCES})
+
+file(GLOB_RECURSE TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
+
+add_executable(server-exec
+        ${CMAKE_CURRENT_SOURCE_DIR}/server-exec/main.cpp
+        )
+
+target_include_directories(server-lib PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-add_executable(demo
-  ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp
-)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>"
-)
-
-target_link_libraries(demo ${PROJECT_NAME})
+target_link_libraries(server-lib PUBLIC asio::asio_headeronly Boost::log Boost::filesystem Boost::thread)
+target_link_libraries(server-exec PUBLIC server-lib asio::asio_static)
 
 if(BUILD_TESTS)
   add_executable(tests
-    # TODO: enum your files and delete this comment
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp
-  )
-  target_link_libraries(tests ${PROJECT_NAME} GTest::gtest_main)
+    ${TEST_SOURCES}
+          )
+  target_link_libraries(tests server-lib GTest::gtest_main)
   enable_testing()
   add_test(NAME unit_tests COMMAND tests)
 endif()
@@ -59,7 +65,7 @@ if(BUILD_COVERAGE)
   set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/coverage/cmake")
   find_package(codecov)
-  add_coverage(${PROJECT_NAME})
+  add_coverage(server-exec)
   add_coverage(tests)
   coverage_evaluate()
 endif()
@@ -75,19 +81,19 @@ if(BUILD_DOCS)
   # add_dependencies(install docs) need to call target docs before install or package
 endif()
 
-include(CPackConfig.cmake)
+# include(CPackConfig.cmake)
 
-install(TARGETS ${PROJECT_NAME} demo
-  EXPORT "${PROJECT_NAME}-targets"
-  RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  INCLUDES DESTINATION include
-)
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
-
-install(EXPORT "${PROJECT_NAME}-targets"
-  NAMESPACE "${PROJECT_NAME}::"
-  DESTINATION "lib/cmake"
-)
+# install(TARGETS ${PROJECT_NAME} server-exec
+#  EXPORT "${PROJECT_NAME}-targets"
+#  RUNTIME DESTINATION bin
+#  ARCHIVE DESTINATION lib
+#  LIBRARY DESTINATION lib
+#  INCLUDES DESTINATION include
+# )
+#
+# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
+#
+# install(EXPORT "${PROJECT_NAME}-targets"
+#  NAMESPACE "${PROJECT_NAME}::"
+#  DESTINATION "lib/cmake"
+# )
