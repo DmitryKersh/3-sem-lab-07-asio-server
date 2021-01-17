@@ -14,7 +14,7 @@ static void log_init() {
                                    logging::trivial::trace);
 
   logging::add_file_log(keywords::file_name = "logs/file_%3N.log",
-8                        keywords::rotation_size = 5 * 128 * 1024,
+                        keywords::rotation_size = 5 * 128 * 1024,
                         keywords::time_based_rotation =
                             sinks::file::rotation_at_time_point(12, 0, 0));
 }
