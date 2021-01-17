@@ -25,7 +25,7 @@ int main() {
   const int port = 8080;
 
   Server server(
-      Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(8), 8});
+      Properties{tcp::endpoint{tcp::v4(), port}, std::chrono::seconds(5), 8});
 
   std::string input;
   while (input != "stop") {
